@@ -1,0 +1,101 @@
+{% extends "base.html" %}
+{% block title %}{{ card.display }}{% endblock %}
+{% block body_class %}reader{% endblock %}
+
+{% block content %}
+{# ————————————————————————————————————————
+   * الشريط الأفقي: الملفات المرفوعة كتبويبات
+   ———————————————————————————————————————— #}
+<header class="deck">
+  <nav class="tabs" aria-label="الملفات">
+    {% for item in library %}
+    <a class="tab {% if item.stored == card.stored %}is-open{% endif %}"
+       href="{{ url_for('view_file', stored=item.stored) }}"
+       {% if item.stored == card.stored %}aria-current="page"{% endif %}>
+      <span class="tab__kind num">{{ item.ext }}</span>
+      <span class="tab__name">{{ item.display }}</span>
+    </a>
+    {% endfor %}
+    <a class="tab tab--add" href="{{ url_for('new_file') }}" aria-label="رفع ملف جديد">+</a>
+  </nav>
+
+  <div class="deck__meta">
+    {% if sheets %}<span class="num">{{ sheets|length }}</span> صفحة{% endif %}
+    <a class="deck__save" href="{{ url_for('download_file', stored=card.stored) }}">تنزيل</a>
+    <a class="deck__drop" href="{{ url_for('confirm_delete', stored=card.stored) }}">حذف</a>
+  </div>
+</header>
+
+{% with messages = get_flashed_messages() %}
+  {% if messages %}
+    <p class="toast" role="status">{{ messages|join(' ') }}</p>
+  {% endif %}
+{% endwith %}
+
+{# ————————————————————————————————————————
+   * منطقة القراءة
+   ———————————————————————————————————————— #}
+<main class="reel {% if not sheets %}reel--single{% endif %}">
+  {% if card.kind == 'pdf' %}
+    {% for sheet in sheets %}
+    <figure class="frame" id="page-{{ loop.index }}">
+      <img class="sheet"
+           src="{{ url_for('serve_page', stored=card.stored, name=sheet.file) }}"
+           width="{{ sheet.w }}"
+           height="{{ sheet.h }}"
+           {# * الوسمان أعلاه يحجزان مساحة الصفحة قبل تحميلها، فلا يقفز شريط التمرير. #}
+           {% if loop.index > 2 %}loading="lazy"{% endif %}
+           decoding="async"
+           alt="الصفحة {{ loop.index }} من {{ card.display }}">
+
+      {# * طبقة النص: مقاطع شفافة فوق الصورة في مواضعها الأصلية.
+         * بها يعمل Ctrl+F، ويُنسخ النص، وتقرأ قارئات الشاشة الصفحة. #}
+      {% if sheet.text %}
+      <div class="layer">
+        {% for span in sheet.text %}
+        <span dir="auto"
+              style="--x:{{ span.x }};--y:{{ span.y }};--w:{{ span.w }};--h:{{ span.h }};--f:{{ span.f }}"
+        >{{ span.t }}</span>
+        {% endfor %}
+      </div>
+      {% endif %}
+
+      <figcaption class="frame__no num">{{ '%02d' % loop.index }}</figcaption>
+    </figure>
+    {% endfor %}
+
+    {% if not sheets %}
+    <p class="reel__status">لم تُحوَّل صفحات هذا الملف بعد.</p>
+    {% endif %}
+
+  {% elif card.kind == 'image' %}
+    <img class="sheet"
+         src="{{ url_for('serve_file', stored=card.stored) }}"
+         decoding="async"
+         alt="{{ card.display }}">
+
+  {% else %}
+    <pre class="sheet sheet--text">{{ text }}</pre>
+  {% endif %}
+</main>
+
+{# ————————————————————————————————————————
+   * الشريط الجانبي: مصغّرات الصفحات
+   * روابط مرساة عادية؛ الانزلاق يأتي من scroll-behavior في CSS.
+   ———————————————————————————————————————— #}
+{% if sheets %}
+<aside class="strip" aria-label="صفحات الملف">
+  <div class="strip__reel">
+    {% for sheet in sheets %}
+    <a class="thumb" href="#page-{{ loop.index }}">
+      <img src="{{ url_for('serve_page', stored=card.stored, name=sheet.thumb) }}"
+           width="{{ sheet.tw }}" height="{{ sheet.th }}"
+           loading="lazy" decoding="async"
+           alt="مصغّرة الصفحة {{ loop.index }}">
+      <span class="thumb__no num">{{ loop.index }}</span>
+    </a>
+    {% endfor %}
+  </div>
+</aside>
+{% endif %}
+{% endblock %}

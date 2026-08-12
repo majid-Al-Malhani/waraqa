@@ -1,0 +1,30 @@
+{% extends "base.html" %}
+{% block title %}حذف {{ card.display }}{% endblock %}
+{% block body_class %}entry{% endblock %}
+
+{% block content %}
+<header class="deck">
+  <nav class="tabs" aria-label="الملفات">
+    {% for item in library %}
+    <a class="tab {% if item.stored == card.stored %}is-open{% endif %}"
+       href="{{ url_for('view_file', stored=item.stored) }}">
+      <span class="tab__kind num">{{ item.ext }}</span>
+      <span class="tab__name">{{ item.display }}</span>
+    </a>
+    {% endfor %}
+    <a class="tab tab--add" href="{{ url_for('new_file') }}" aria-label="رفع ملف جديد">+</a>
+  </nav>
+</header>
+
+<main class="stage">
+  <h1 class="stage__ask">حذف هذا الملف؟</h1>
+  <p class="stage__file">{{ card.display }}</p>
+  <p class="stage__line">يُمحى الملف وصفحاته المحوَّلة نهائيًا. لا تراجع بعدها.</p>
+
+  {# * الحذف عبر POST لا رابط GET. #}
+  <form class="verdict" action="{{ url_for('delete_file', stored=card.stored) }}" method="post">
+    <button class="verdict__go" type="submit">احذف</button>
+    <a class="verdict__back" href="{{ url_for('view_file', stored=card.stored) }}">تراجع</a>
+  </form>
+</main>
+{% endblock %}

@@ -1,0 +1,459 @@
+/*
+ * style.css — وَرَقَة
+ * الاتجاه البصري: غرفة عرض سينمائية. سواد عميق، وضوء تنجستن كهرماني،
+ * والورقة البيضاء هي الإطار المُسقَط على الشاشة.
+ */
+
+:root {
+  /* * اللوحة اللونية — أربعة أعماق من السواد ولون ضوء واحد */
+  --void: #0b0c0e;      /* خلفية القاعة */
+  --panel: #14171a;     /* الأشرطة والأسطح */
+  --edge: #262b31;      /* الحدود والفواصل */
+  --dim: #7b8794;       /* نص ثانوي */
+  --light: #f2efe9;     /* نص أساسي — أبيض دافئ لا ناصع */
+  --beam: #e4b23c;      /* شعاع المُسقِط: التمييز والتفاعل */
+  --warn: #d4574a;      /* الحذف وحده */
+
+  /* * الخطوط: كوفي هندسي للعنوان، سانس للنص، مونو لأرقام الإطارات */
+  --display: "Reem Kufi", sans-serif;
+  --body: "IBM Plex Sans Arabic", system-ui, sans-serif;
+  --mono: "IBM Plex Mono", ui-monospace, monospace;
+
+  --deck-h: 3.25rem;
+  /* * الشريط صار عموديًا: العرض هو ما يهم الآن لا الارتفاع. */
+  --strip-w: 6.5rem;
+}
+
+*, *::before, *::after { box-sizing: border-box; }
+
+html {
+  /* * انزلاق عند الانتقال إلى صفحة من الشريط الجانبي.
+   * ! لا يمسّ تمرير العجلة أو الإصبع؛ ذاك تمرير أصلي وهو الأسرع دائمًا. */
+  scroll-behavior: smooth;
+}
+
+body {
+  margin: 0;
+  background: var(--void);
+  color: var(--light);
+  font-family: var(--body);
+  line-height: 1.6;
+  overscroll-behavior-y: contain;
+  -webkit-text-size-adjust: 100%;
+}
+
+.num { font-family: var(--mono); font-variant-numeric: tabular-nums; }
+
+a { color: inherit; text-decoration: none; }
+
+:focus-visible { outline: 2px solid var(--beam); outline-offset: 3px; }
+
+/* ————————————————————————————————————————
+ * * الشريط العلوي: تبويبات الملفات
+ * ———————————————————————————————————————— */
+.deck {
+  position: sticky;
+  top: 0;
+  z-index: 6;
+  height: var(--deck-h);
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: stretch;
+  /* ! لون صلب لا backdrop-filter: التمويه الزجاجي يُعاد رسمه مع كل إطار أثناء التمرير. */
+  background: var(--panel);
+  border-bottom: 1px solid var(--edge);
+}
+
+.tabs {
+  display: flex;
+  align-items: stretch;
+  overflow-x: auto;
+  /* ? يمنع أن يتحوّل التمرير الأفقي إلى رجوع في تاريخ المتصفح. */
+  overscroll-behavior-x: contain;
+  scrollbar-width: none;
+}
+
+.tabs::-webkit-scrollbar { display: none; }
+
+.tab {
+  flex: 0 0 auto;
+  display: flex;
+  align-items: center;
+  gap: 0.55rem;
+  max-width: 15rem;
+  padding: 0 1rem;
+  border-inline-end: 1px solid var(--edge);
+  color: var(--dim);
+  font-size: 0.85rem;
+  /* * الحد السفلي الشفاف محجوز مسبقًا حتى لا يقفز النص عند التفعيل. */
+  border-bottom: 2px solid transparent;
+  transition: color 0.15s ease, background 0.15s ease;
+}
+
+.tab:hover { color: var(--light); background: #1a1e23; }
+
+.tab.is-open {
+  color: var(--light);
+  background: var(--void);
+  border-bottom-color: var(--beam);
+}
+
+.tab__kind {
+  font-size: 0.6rem;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--void);
+  background: var(--dim);
+  padding: 0.15rem 0.4rem;
+}
+
+.tab.is-open .tab__kind { background: var(--beam); }
+
+.tab__name { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+
+.tab--add {
+  font-size: 1.35rem;
+  line-height: 1;
+  color: var(--beam);
+  padding-inline: 1.1rem;
+}
+
+.deck__meta {
+  display: flex;
+  align-items: center;
+  gap: 1.1rem;
+  padding-inline: 1.25rem;
+  border-inline-start: 1px solid var(--edge);
+  font-size: 0.78rem;
+  color: var(--dim);
+  white-space: nowrap;
+}
+
+.deck__save, .deck__drop { border-bottom: 1px solid transparent; }
+.deck__save { color: var(--beam); }
+.deck__save:hover { border-bottom-color: var(--beam); }
+
+/* * الحذف بلون مختلف عن كل تفاعل آخر في الواجهة، فلا يُنقر سهوًا. */
+.deck__drop { color: var(--dim); }
+.deck__drop:hover { color: var(--warn); border-bottom-color: var(--warn); }
+
+.toast {
+  position: sticky;
+  top: var(--deck-h);
+  z-index: 5;
+  margin: 0;
+  padding: 0.5rem 1.25rem;
+  background: var(--panel);
+  border-bottom: 1px solid var(--edge);
+  border-inline-start: 3px solid var(--beam);
+  font-size: 0.82rem;
+  color: var(--light);
+}
+
+/* ————————————————————————————————————————
+ * * منطقة القراءة
+ * ———————————————————————————————————————— */
+.reel {
+  display: grid;
+  justify-items: center;
+  gap: 2.25rem;
+  padding: 2.25rem 1rem 4rem;
+  /* * فسحة للشريط الجانبي الثابت حتى لا تختفي الصفحات تحته. */
+  padding-inline-end: calc(var(--strip-w) + 1rem);
+}
+
+.reel--single { padding-bottom: 4rem; }
+
+.reel__status { color: var(--dim); margin: 5rem 0; }
+
+.frame {
+  position: relative;
+  width: min(56rem, 100%);
+  margin: 0;
+  /* ? يترك مسافة تحت الشريط العلوي عند الانتقال إلى صفحة معيّنة. */
+  scroll-margin-block-start: calc(var(--deck-h) + 1.5rem);
+  /* * يجعل الإطار حاويةَ استعلام، فتقيس مقاطع النص حجمها بوحدة cqw
+   * * أي نسبةً من عرض الصفحة — فيتمدّد الخط مع الورقة تلقائيًا. */
+  container-type: inline-size;
+}
+
+.sheet {
+  display: block;
+  width: min(56rem, 100%);
+  /* ? height: auto مع وسمي width وheight في HTML = نسبة أبعاد محفوظة ومساحة محجوزة. */
+  height: auto;
+  background: #fff;
+  /* * حافة كهرمانية رفيعة تجعل الورقة تبدو مضاءة لا ملصقة على السواد. */
+  box-shadow: 0 0 0 1px rgb(228 178 60 / 0.14), 0 18px 40px -24px rgb(0 0 0 / 0.9);
+}
+
+/* * رقم الإطار في الهامش — مستعار من عدّاد لقطات الفيلم.
+ * ? وُضع في الجهة المقابلة للشريط الجانبي حتى لا يتزاحما. */
+.frame__no {
+  position: absolute;
+  top: 0;
+  inset-inline-end: calc(100% + 1.25rem);
+  font-size: 0.75rem;
+  color: var(--edge);
+  letter-spacing: 0.05em;
+}
+
+/* ————————————————————————————————————————
+ * * طبقة النص الشفافة
+ * ———————————————————————————————————————— */
+.layer {
+  position: absolute;
+  inset: 0;
+  /* ! النص شفاف لا مخفي: display:none أو visibility:hidden
+   * ! يُخرجانه من متناول Ctrl+F ومن قارئات الشاشة معًا. */
+  color: transparent;
+  user-select: text;
+  cursor: text;
+  line-height: 1;
+}
+
+.layer span {
+  position: absolute;
+  /* ? النسب المئوية تُحسب من أبعاد الإطار، فتتبع الصورة عند أي عرض.
+   * ? ونستخدم left/top الفيزيائيتين لا المنطقيتين: إحداثيات PDF تبدأ من اليسار دائمًا. */
+  left: calc(var(--x) * 1%);
+  top: calc(var(--y) * 1%);
+  width: calc(var(--w) * 1%);
+  height: calc(var(--h) * 1%);
+  font-size: calc(var(--f) * 1cqw);
+  white-space: pre;
+  transform-origin: 0 0;
+}
+
+/* * لون التحديد كهرماني كبقية الواجهة. */
+.layer span::selection { background: rgb(228 178 60 / 0.35); }
+
+.frame:target .sheet { box-shadow: 0 0 0 2px var(--beam), 0 18px 40px -24px rgb(0 0 0 / 0.9); }
+.frame:target .frame__no { color: var(--beam); }
+
+.sheet--text {
+  font-family: var(--mono);
+  font-size: 0.9rem;
+  line-height: 1.85;
+  color: #14171a;
+  padding: 2.75rem;
+  margin: 0;
+  white-space: pre-wrap;
+  word-break: break-word;
+}
+
+/* ————————————————————————————————————————
+ * * الشريط الجانبي: مصغّرات الصفحات — التوقيع البصري
+ * ———————————————————————————————————————— */
+.strip {
+  position: fixed;
+  inset-inline-end: 0;
+  top: var(--deck-h);
+  bottom: 0;
+  z-index: 6;
+  width: var(--strip-w);
+  background: var(--panel);
+  border-inline-start: 1px solid var(--edge);
+}
+
+/* * ثقوب بكرة الفيلم على حافتي الشريط: تدرّج متكرر لا صور.
+ * ? صار الاتجاه رأسيًا بعد نقل الشريط إلى الجانب. */
+.strip::before, .strip::after {
+  content: "";
+  position: absolute;
+  inset-block: 0;
+  width: 7px;
+  background-image: repeating-linear-gradient(
+    180deg, var(--void) 0 7px, transparent 7px 20px
+  );
+}
+
+.strip::before { inset-inline-start: 4px; }
+.strip::after { inset-inline-end: 4px; }
+
+.strip__reel {
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.6rem;
+  padding: 1rem 0.9rem;
+  overflow-y: auto;
+  overflow-x: hidden;
+  overscroll-behavior: contain;
+  scroll-snap-type: y proximity;
+  scrollbar-width: thin;
+  scrollbar-color: var(--edge) transparent;
+}
+
+.thumb {
+  position: relative;
+  flex: 0 0 auto;
+  scroll-snap-align: center;
+  line-height: 0;
+}
+
+.thumb img {
+  display: block;
+  width: 3.6rem;
+  height: auto;
+  background: #fff;
+  opacity: 0.55;
+  outline: 1px solid var(--edge);
+  transition: opacity 0.15s ease, outline-color 0.15s ease;
+}
+
+.thumb:hover img, .thumb:focus-visible img {
+  opacity: 1;
+  outline-color: var(--beam);
+}
+
+.thumb__no {
+  position: absolute;
+  bottom: 0.2rem;
+  inset-inline-start: 0.25rem;
+  font-size: 0.6rem;
+  line-height: 1;
+  padding: 0.15rem 0.3rem;
+  color: var(--light);
+  background: rgb(11 12 14 / 0.75);
+}
+
+/* ————————————————————————————————————————
+ * * صفحة الدخول وصفحة تأكيد الحذف
+ * ———————————————————————————————————————— */
+.entry { display: grid; grid-template-rows: auto 1fr; min-height: 100dvh; }
+
+.stage {
+  display: grid;
+  align-content: center;
+  justify-items: center;
+  text-align: center;
+  gap: 1rem;
+  padding: 3rem 1.25rem 6rem;
+}
+
+.stage__mark {
+  font-family: var(--display);
+  font-size: clamp(3.5rem, 14vw, 7rem);
+  font-weight: 700;
+  line-height: 1;
+  margin: 0;
+  color: var(--light);
+  /* * وهج المُسقِط خلف الاسم. */
+  text-shadow: 0 0 60px rgb(228 178 60 / 0.28);
+}
+
+.stage__ask {
+  font-family: var(--display);
+  font-size: clamp(1.75rem, 6vw, 2.75rem);
+  font-weight: 500;
+  margin: 0;
+  color: var(--light);
+}
+
+.stage__file {
+  margin: 0;
+  font-family: var(--mono);
+  font-size: 0.9rem;
+  color: var(--beam);
+  word-break: break-all;
+  max-width: 30rem;
+}
+
+.stage__line { margin: 0; color: var(--dim); max-width: 26rem; }
+
+.stage__hint { margin: 0; font-size: 0.8rem; color: var(--edge); }
+
+.notice {
+  margin: 0;
+  padding: 0.7rem 1.1rem;
+  list-style: none;
+  border-inline-start: 3px solid var(--beam);
+  background: var(--panel);
+  font-size: 0.9rem;
+  text-align: start;
+}
+
+.intake {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  align-items: center;
+  gap: 0.75rem;
+  margin-top: 1.5rem;
+  padding: 1rem;
+  background: var(--panel);
+  border: 1px solid var(--edge);
+}
+
+.intake__file { font-family: var(--body); font-size: 0.85rem; color: var(--dim); max-width: 100%; }
+
+.intake__go {
+  font-family: var(--display);
+  font-size: 1rem;
+  font-weight: 500;
+  color: var(--void);
+  background: var(--beam);
+  border: 0;
+  padding: 0.6rem 2rem;
+  cursor: pointer;
+  transition: filter 0.15s ease;
+}
+
+.intake__go:hover { filter: brightness(1.12); }
+
+.verdict {
+  display: flex;
+  align-items: center;
+  gap: 1.5rem;
+  margin-top: 1.5rem;
+}
+
+.verdict__go {
+  font-family: var(--display);
+  font-size: 1rem;
+  font-weight: 500;
+  color: var(--light);
+  background: var(--warn);
+  border: 0;
+  padding: 0.6rem 2rem;
+  cursor: pointer;
+  transition: filter 0.15s ease;
+}
+
+.verdict__go:hover { filter: brightness(1.12); }
+
+.verdict__back {
+  color: var(--dim);
+  font-size: 0.9rem;
+  border-bottom: 1px solid transparent;
+}
+
+.verdict__back:hover { color: var(--light); border-bottom-color: var(--edge); }
+
+/* ————————————————————————————————————————
+ * * التكيّف وتفضيلات الحركة
+ * ———————————————————————————————————————— */
+@media (max-width: 78rem) {
+  /* ? رقم الإطار يخرج عن الشاشة على العروض الضيقة، فنخفيه. */
+  .frame__no { display: none; }
+}
+
+@media (max-width: 46rem) {
+  /* ? الشريط الجانبي يبتلع عرضًا ثمينًا على الجوال، فيُخفى. */
+  :root { --strip-w: 0rem; }
+  .strip { display: none; }
+  .deck__meta { padding-inline: 0.75rem; gap: 0.75rem; font-size: 0.7rem; }
+  .tab { max-width: 9rem; padding: 0 0.7rem; }
+  .reel { padding-inline: 0.5rem; gap: 1.5rem; }
+  .sheet--text { padding: 1.5rem; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  html { scroll-behavior: auto; }
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    transition-duration: 0.01ms !important;
+  }
+}

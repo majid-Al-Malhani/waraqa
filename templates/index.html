@@ -1,0 +1,39 @@
+{% extends "base.html" %}
+{% block body_class %}entry{% endblock %}
+
+{% block content %}
+{% if library %}
+<header class="deck">
+  <nav class="tabs" aria-label="الملفات">
+    {% for item in library %}
+    <a class="tab" href="{{ url_for('view_file', stored=item.stored) }}">
+      <span class="tab__kind num">{{ item.ext }}</span>
+      <span class="tab__name">{{ item.display }}</span>
+    </a>
+    {% endfor %}
+    <a class="tab tab--add is-open" href="{{ url_for('new_file') }}" aria-label="رفع ملف جديد">+</a>
+  </nav>
+</header>
+{% endif %}
+
+<main class="stage">
+  <h1 class="stage__mark">وَرَقَة</h1>
+  <p class="stage__line">افتح الملف في المتصفح. لا تنزيل، ولا برنامج، ولا انتظار.</p>
+
+  {% with messages = get_flashed_messages() %}
+    {% if messages %}
+      <ul class="notice" role="status">
+        {% for message in messages %}<li>{{ message }}</li>{% endfor %}
+      </ul>
+    {% endif %}
+  {% endwith %}
+
+  <form class="intake" action="{{ url_for('upload') }}" method="post" enctype="multipart/form-data">
+    <input class="intake__file" type="file" name="file" required
+           accept=".pdf,.png,.jpg,.jpeg,.webp,.gif,.txt,.md,.csv">
+    <button class="intake__go" type="submit">افتح</button>
+  </form>
+
+  <p class="stage__hint">PDF · صور · نصوص — حتى <span class="num">{{ limit_mb }}</span> ميغابايت</p>
+</main>
+{% endblock %}
