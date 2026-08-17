@@ -65,17 +65,6 @@
 
 ---
 
-## التشغيل
-
-```bash
-py -m venv .venv
-.venv\Scripts\activate
-py -m pip install -r requirements.txt
-python app.py
-```
-
-ثم `http://127.0.0.1:5000`.
-
 > **ملاحظة:** يحتاج المشروع نسخة بايثون القياسية. النسخة عديمة القفل العام (free-threaded) لا تتوفّر لها عجلات PyMuPDF جاهزة.
 
 ---
